@@ -1,0 +1,28 @@
+node_modules/
+*.env
+*.json
+
+canva-cover-letter-d1ced73d1ef0.json
+client_secret_352728166308-0qdc0pqe4oqctjo8h7g8f9iabvbpbc2n.apps.googleusercontent.com.json
+
+# .gitignore
+app-source/
+
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Bower dependency directories
+bower_components/
+
+# IDE directories
+.idea/
+.vscode/
+
+# Other
+.DS_Store
+*.log

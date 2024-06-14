@@ -1,0 +1,42 @@
+# Ensure all text files use LF for line endings
+* text=auto eol=lf
+
+# Define specific rules for certain file types
+
+# JavaScript files
+*.js text
+
+# CSS files
+*.css text
+
+# HTML files
+*.html text
+
+# JSON files
+*.json text
+
+# Shell script files
+*.sh text eol=lf
+
+# Markdown files
+*.md text
+
+# Images
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+
+# Font files
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+
+# Binary files
+*.pdf binary
+*.zip binary
+
+# Exclude sensitive or large files
+**/node_modules/* binary
