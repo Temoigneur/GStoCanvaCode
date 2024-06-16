@@ -1,4 +1,3 @@
-// src/server/server.js
 const express = require('express');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -69,11 +68,18 @@ app.get('/create-design', async (req, res) => {
     }
 });
 
-const options = {
-    key: fs.readFileSync('E:/google-sheets-canva-integration/server.key'),
-    cert: fs.readFileSync('E:/google-sheets-canva-integration/server.cert')
-};
+// If running locally, use HTTPS
+if (process.env.NODE_ENV === 'development') {
+    const options = {
+        key: fs.readFileSync('E:/google-sheets-canva-integration/server.key'),
+        cert: fs.readFileSync('E:/google-sheets-canva-integration/server.cert')
+    };
 
-https.createServer(options, app).listen(PORT, () => {
-    console.log(`Server is running on https://localhost:${PORT}`);
-});
+    https.createServer(options, app).listen(PORT, () => {
+        console.log(`Server is running on https://localhost:${PORT}`);
+    });
+} else {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
