@@ -1,27 +1,24 @@
+// src/server/sheets.js
 const { google } = require('googleapis');
 require('dotenv').config();
 
-const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString('utf-8')),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
-
-const client = auth.getClient();
-const googleSheets = google.sheets({ version: 'v4', auth: client });
-const spreadsheetId = process.env.SPREADSHEET_ID;
-
 async function accessGoogleSheet() {
-    try {
-        const response = await googleSheets.spreadsheets.values.get({
-            auth,
-            spreadsheetId,
-            range: 'GS-Canva!A1:H600',
-        });
-        return response.data.values;
-    } catch (error) {
-        console.error('Error accessing Google Sheet:', error);
-        throw error;
-    }
+    const auth = new google.auth.GoogleAuth({
+        keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+
+    const client = await auth.getClient();
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const spreadsheetId = process.env.SPREADSHEET_ID;
+    const range = 'Sheet1!A1:D1';
+
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range,
+    });
+
+    return response.data.values;
 }
 
 module.exports = { accessGoogleSheet };

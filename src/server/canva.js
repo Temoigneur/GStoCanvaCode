@@ -1,85 +1,59 @@
 // src/server/canva.js
-const { requestExport, createDesign, addPage, getDesign } = require('@canva/design');
+const axios = require('axios');
 require('dotenv').config();
 
-async function createCanvaDesign(data) {
-    const designId = process.env.CANVA_DESIGN_ID;
-    const design = await getDesign(designId);
-    const firstPage = design.pages[0];
-
-    await firstPage.addText({
-        text: data.recipientName,
-        position: { x: 20, y: 40 },
-        style: {
-            fontSize: 14,
-            fontFamily: 'Arial',
-            fontWeight: 'bold',
-            color: '#000000',
-        },
-    });
-
-    await firstPage.addText({
-        text: data.coverLetterText,
-        position: { x: 20, y: 80 },
-        style: {
-            fontSize: 12,
-            fontFamily: 'Arial',
-            color: '#000000',
-        },
-    });
-
-    await firstPage.addText({
-        text: data.senderName,
-        position: { x: 20, y: 260 },
-        style: {
-            fontSize: 14,
-            fontFamily: 'Arial',
-            fontWeight: 'bold',
-            color: '#000000',
-        },
-    });
-
-    const overflow = await checkTextOverflow(firstPage);
-    if (overflow) {
-        await addNewPage(design, data.overflowText);
-    }
-
-    const exportUrl = await exportDesign(design);
-    console.log(`Design exported to: ${exportUrl}`);
-    return exportUrl;
-}
-
-async function checkTextOverflow(page) {
-    // Logic to check if the text overflows the current page
-    return false; // Placeholder
-}
-
-async function addNewPage(design, overflowText) {
-    const newPage = await addPage({
-        elements: [
-            {
-                type: 'TEXT',
-                children: [overflowText],
-                width: 100,
-                height: 'auto',
-                top: 20,
-                left: 10,
-                style: {
-                    fontSize: 12,
-                    fontFamily: 'Arial',
-                    color: '#000000',
-                },
+async function getCanvaAccessToken(code) {
+    try {
+        const response = await axios.post('https://api.product.canva.com/v1/oauth2/token', null, {
+            params: {
+                client_id: process.env.CLIENT_ID,
+                client_secret: process.env.CLIENT_SECRET,
+                code,
+                grant_type: 'authorization_code',
+                redirect_uri: process.env.REDIRECT_URI,
             },
-        ],
-    });
+        });
+        return response.data.access_token;
+    } catch (error) {
+        console.error('Error getting Canva access token:', error);
+        throw error;
+    }
 }
 
-async function exportDesign(design) {
-    const response = await requestExport({
-        designId: design.id,
-        acceptedFileTypes: ['PDF'],
-    });
-    return response.exportBlobs[0].url;
+async function createCanvaDesign(accessToken, data) {
+    const designId = process.env.CANVA_DESIGN_ID;
+
+    try {
+        let design = await axios.get(`https://api.product.canva.com/v1/designs/${designId}`, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        design = design.data;
+        const firstPage = design.pages[0];
+
+        await axios.post(`https://api.product.canva.com/v1/designs/${designId}/pages/${firstPage.id}/elements`, {
+            type: 'TEXT',
+            children: [data.recipientName],
+            position: { x: 20, y: 40 },
+            style: {
+                fontSize: 14,
+                fontFamily: 'Arial',
+                fontWeight: 'bold',
+                color: '#000000',
+            },
+        }, {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        return `https://www.canva.com/design/${designId}/view`;
+    } catch (error) {
+        console.error('Error creating Canva design:', error);
+        throw error;
+    }
 }
 
-module.exports = { createCanvaDesign };
+module.exports = { getCanvaAccessToken, createCanvaDesign };

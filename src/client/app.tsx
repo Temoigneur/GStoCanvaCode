@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { canva } from '@canva/design';
 
-const App = () => {
+const App: React.FC = () => {
     const [designUrls, setDesignUrls] = useState<string[]>([]);
 
     const createDesigns = async () => {

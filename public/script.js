@@ -1,3 +1,4 @@
+// /public/script.js
 document.getElementById('fetch-design').addEventListener('click', async () => {
     try {
         const response = await fetch('/create-design');
@@ -6,11 +7,15 @@ document.getElementById('fetch-design').addEventListener('click', async () => {
         if (typeof window !== 'undefined' && window.canva) {
             const { canva } = window;
 
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
             for (let row of data) {
                 const design = await canva.designs.create({
                     title: `Cover Letter - ${row['[Recipient Name]']}`,
-                    width: 800, 
-                    height: 600 
+                    width: 800,
+                    height: 600
                 });
 
                 await design.addText({

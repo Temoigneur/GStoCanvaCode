@@ -1,32 +1,22 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/client/index.js',
+  entry: './src/client/app.tsx', // Adjust the entry point if necessary
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: 'bundle.js', // This is the file you will upload to Canva
   },
-  target: 'node',  // For server-side code
   resolve: {
-    fallback: {
-      fs: false,
-      path: require.resolve('path-browserify'),
-      os: require.resolve('os-browserify/browser'),
-      http: require.resolve('stream-http'),
-      https: require.resolve('https-browserify'),
-      stream: require.resolve('stream-browserify'),
-      zlib: require.resolve('browserify-zlib'),
-      crypto: require.resolve('crypto-browserify'),
-      vm: require.resolve('vm-browserify'),
-    },
+    extensions: ['.tsx', '.ts', '.js'],
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
-        exclude: /node_modules/,
+        test: /\.tsx?$/,
         use: 'babel-loader',
+        exclude: /node_modules/,
       },
     ],
   },
+  mode: 'production', // Ensure the mode is set to production for the final bundle
 };
