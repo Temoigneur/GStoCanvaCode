@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
+const cors = require('cors');
 const { accessGoogleSheet } = require('./sheets');
 
 dotenv.config();
@@ -10,6 +11,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3005;
 const BACKEND_URL = process.env.BACKEND_URL || `https://localhost:${PORT}`;
+const CANVA_APP_ORIGIN = 'https://app-aagieajdpoo.canva-apps.com'; // Canva app origin
+
+// Configure CORS to allow requests from the Canva app origin
+app.use(cors({
+    origin: CANVA_APP_ORIGIN,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+}));
 
 app.use(express.static(path.join(__dirname, '../../public')));
 
