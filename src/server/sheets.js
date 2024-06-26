@@ -1,4 +1,3 @@
-// src/server/sheets.js
 const { google } = require('googleapis');
 require('dotenv').config();
 
@@ -11,14 +10,19 @@ async function accessGoogleSheet() {
     const client = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: client });
     const spreadsheetId = process.env.SPREADSHEET_ID;
-    const range = 'Sheet1!A1:D1';
+    const range = 'Sheet1!A1:H1000';
 
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId,
-        range,
-    });
-
-    return response.data.values;
+    try {
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+        });
+        console.log('Google Sheets Data:', response.data.values);
+        return response.data.values;
+    } catch (error) {
+        console.error('Error accessing Google Sheets:', error);
+        throw error;
+    }
 }
 
 module.exports = { accessGoogleSheet };

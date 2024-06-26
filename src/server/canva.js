@@ -1,59 +1,54 @@
-// src/server/canva.js
-const axios = require('axios');
-require('dotenv').config();
+const fetch = require('node-fetch');
+const nock = require('nock');
 
-async function getCanvaAccessToken(code) {
-    try {
-        const response = await axios.post('https://api.product.canva.com/v1/oauth2/token', null, {
-            params: {
-                client_id: process.env.CLIENT_ID,
-                client_secret: process.env.CLIENT_SECRET,
-                code,
-                grant_type: 'authorization_code',
-                redirect_uri: process.env.REDIRECT_URI,
-            },
+if (process.env.MOCK_CANVA_API === 'true') {
+    nock('https://api.canva.com')
+        .persist()
+        .post('/v1/designs')
+        .reply(200, {
+            url: 'https://mocked.canva.design/url'
         });
-        return response.data.access_token;
-    } catch (error) {
-        console.error('Error getting Canva access token:', error);
-        throw error;
-    }
 }
 
-async function createCanvaDesign(accessToken, data) {
-    const designId = process.env.CANVA_DESIGN_ID;
-
+async function createCanvaDesign(data) {
     try {
-        let design = await axios.get(`https://api.product.canva.com/v1/designs/${designId}`, {
+        const response = await fetch('https://api.canva.com/v1/designs', {
+            method: 'POST',
             headers: {
-                Authorization: `Bearer ${accessToken}`,
+                'Authorization': `Bearer ${process.env.CANVA_API_KEY}`,
+                'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+                templateId: 'DAGIVDynLB4',
+                elements: [
+                    {
+                        type: 'text',
+                        id: 'placeholder1',
+                        content: data.coverLetterText,
+                    },
+                    {
+                        type: 'text',
+                        id: 'placeholder2',
+                        content: data.overflowText,
+                    },
+                ],
+            }),
         });
 
-        design = design.data;
-        const firstPage = design.pages[0];
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error creating Canva design: ${response.status} - ${errorText}`);
+        }
 
-        await axios.post(`https://api.product.canva.com/v1/designs/${designId}/pages/${firstPage.id}/elements`, {
-            type: 'TEXT',
-            children: [data.recipientName],
-            position: { x: 20, y: 40 },
-            style: {
-                fontSize: 14,
-                fontFamily: 'Arial',
-                fontWeight: 'bold',
-                color: '#000000',
-            },
-        }, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-        });
-
-        return `https://www.canva.com/design/${designId}/view`;
+        const design = await response.json();
+        console.log('Canva Design Response:', design);
+        return design.url;
     } catch (error) {
         console.error('Error creating Canva design:', error);
         throw error;
     }
 }
 
-module.exports = { getCanvaAccessToken, createCanvaDesign };
+module.exports = {
+    createCanvaDesign,
+};
